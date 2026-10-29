@@ -1,0 +1,54 @@
+# Local run: `docker compose up -d --build`, then open http://localhost:3100
+# Ports bind to 127.0.0.1 only. To let phones on your own Wi-Fi reach the app, change the app port
+# to "3100:3000" deliberately (see README).
+name: apotek
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-apotek}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://apotek_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-apotek}
+      DATABASE_ADMIN_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-apotek}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-admin}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    ports:
+      - "127.0.0.1:3100:3000"
+
+  # Sends queued receipts to network printers. For printers installed on this computer (USB / OS printer name)
+  # run the worker on the host instead: `pnpm build:worker && pnpm worker` (see README).
+  print-worker:
+    image: apotek-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://apotek_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-apotek}
+    command: ["node", "dist/print-worker.mjs"]
+
+volumes:
+  pgdata:

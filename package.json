@@ -1,0 +1,49 @@
+{
+  "name": "apotek-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file=.env scripts/migrate.mjs",
+    "db:seed": "node --env-file=.env scripts/seed.mjs",
+    "build:worker": "esbuild src/worker/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/print-worker.mjs",
+    "worker": "node --env-file=.env dist/print-worker.mjs",
+    "build:seed": "esbuild src/seed/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/seed-sample.mjs",
+    "seed:sample": "pnpm build:seed && node --env-file=.env dist/seed-sample.mjs",
+    "build:import": "esbuild src/import/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/import-legacy.mjs"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.2.2",
+    "decimal.js": "^10.6.0",
+    "drizzle-orm": "^0.45.4",
+    "lucide-react": "^1.62.0",
+    "next": "16.4.3",
+    "pg": "^8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^18.0.9",
+    "drizzle-kit": "^0.31.11",
+    "esbuild": "^0.28.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
+  },
+  "packageManager": "pnpm@12.15.0"
+}
