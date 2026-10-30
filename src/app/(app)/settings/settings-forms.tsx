@@ -4,8 +4,9 @@ import { useState } from "react";
 import { ActionForm, Field, SelectField, SubmitButton, FormFeedback } from "@/components/form";
 import { createPrinterAction, savePharmacySettingsAction } from "./actions";
 
-export function PrinterForm() {
+export function PrinterForm({ osPrinters }: { osPrinters: string[] }) {
   const [connection, setConnection] = useState("network");
+  const [typePrinterName, setTypePrinterName] = useState(osPrinters.length === 0);
   return (
     <ActionForm action={createPrinterAction} className="grid gap-4 sm:grid-cols-3">
       <Field label="Code" name="code" required placeholder="e.g. KASIR1" hint="Short name for this printer, letters and numbers." />
@@ -28,8 +29,26 @@ export function PrinterForm() {
           <div className="col-span-2"><Field label="IP address / host" name="host" placeholder="192.168.1.50" /></div>
           <Field label="Port" name="port" type="number" defaultValue={9100} />
         </div>
+      ) : typePrinterName || osPrinters.length === 0 ? (
+        <div>
+          <Field label="Printer name (as shown by the system)" name="osPrinterName" required placeholder="EPSON TM-T20" hint={osPrinters.length === 0 ? "Type the name exactly as the computer shows it." : undefined} />
+          {osPrinters.length > 0 && (
+            <button type="button" className="mt-1 text-xs text-emerald-700 underline" onClick={() => setTypePrinterName(false)}>
+              Choose from detected printers
+            </button>
+          )}
+        </div>
       ) : (
-        <Field label="Printer name (as shown by the system)" name="osPrinterName" placeholder="EPSON TM-T20" />
+        <div>
+          <SelectField label="Detected printer" name="osPrinterName" hint="Printers installed on the computer running this app.">
+            {osPrinters.map((name) => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </SelectField>
+          <button type="button" className="mt-1 text-xs text-slate-600 underline" onClick={() => setTypePrinterName(true)}>
+            Name not listed — type it
+          </button>
+        </div>
       )}
       <div className="flex items-center gap-4 sm:col-span-3">
         <SubmitButton pendingLabel="Saving…">Add printer</SubmitButton>

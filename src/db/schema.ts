@@ -23,6 +23,7 @@ import {
   text,
   timestamp,
   unique,
+  uuid
 } from "drizzle-orm/pg-core";
 
 const money = (name: string) => numeric(name, { precision: 15, scale: 2 });
@@ -726,3 +727,11 @@ export const printJobs = pgTable(
     index("print_jobs_queue_idx").on(t.pharmacyId, t.status, t.createdAt),
   ],
 );
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

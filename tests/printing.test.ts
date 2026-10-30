@@ -7,6 +7,7 @@ import { createPharmacyWithOwner } from "@/server/pharmacies";
 import { createProduct } from "@/server/products";
 import { createPrinter, enqueuePrintJob, PrintError, retryPrintJob, type PrinterInput } from "@/server/printers";
 import { formatMoney, layoutReceipt, loadReceiptModel, renderEscPos, renderPlainText, toPrintable, type ReceiptModel } from "@/server/printing/receipt";
+import { parseLpstatPrinters } from "@/server/printing/os-printers";
 import { runWorkerOnce, type Transport } from "@/server/printing/worker";
 import { commitSale } from "@/server/sales";
 import { withPharmacy } from "@/server/tenant";
@@ -85,6 +86,19 @@ describe("receipt layout", () => {
     expect([...bytes.subarray(0, 2)]).toEqual([0x1b, 0x40]);
     expect([...bytes.subarray(-4)]).toEqual([0x1d, 0x56, 0x42, 0x03]);
     expect(bytes.toString("latin1")).toContain("APOTEK SEHAT SENTOSA");
+  });
+});
+
+describe("operating-system printer discovery", () => {
+  it("reads printer names from lpstat -p and skips unsafe names", () => {
+    const stdout = [
+      "printer EPSON TM-T20 is idle.  enabled since Thu Oct 29 08:00:00 2026",
+      "printer Canon_iP2700_series now printing job-42. enabled since Thu Oct 29 08:00:00 2026",
+      "printer HP_LaserJet disabled since Thu Oct 29 08:00:00 2026 -",
+      "printer Bad;rm is idle.  enabled since Thu Oct 29 08:00:00 2026",
+      "not a printer line",
+    ].join("\n");
+    expect(parseLpstatPrinters(stdout)).toEqual(["Canon_iP2700_series", "EPSON TM-T20", "HP_LaserJet"]);
   });
 });
 

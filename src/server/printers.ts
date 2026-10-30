@@ -1,6 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import type { Tx } from "@/db/client";
 import { printers, printJobs, sales } from "@/db/schema";
+import { OS_PRINTER_NAME_RE } from "@/server/printing/os-printers";
 
 export class PrintError extends Error {
   constructor(message: string) {
@@ -41,7 +42,7 @@ export async function createPrinter(tx: Tx, ctx: Ctx, input: PrinterInput) {
   } else {
     osPrinterName = input.osPrinterName?.trim() ?? "";
     // The name is passed to the operating system's print command, so only plain characters are accepted.
-    if (!/^[\w .()-]{1,100}$/.test(osPrinterName)) throw new PrintError("Enter the printer name exactly as the operating system shows it");
+    if (!OS_PRINTER_NAME_RE.test(osPrinterName)) throw new PrintError("Enter the printer name exactly as the operating system shows it");
   }
   const [row] = await tx
     .insert(printers)

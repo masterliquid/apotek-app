@@ -96,6 +96,11 @@ export async function printSaleAction(formData: FormData) {
   revalidatePath(`/sales/${parsed.data.saleId}`);
 }
 
+export async function refreshOsPrintersAction() {
+  await requirePermission("sales.sell");
+  revalidatePath("/settings/printers");
+}
+
 const Settings = z.object({
   name: text(150).min(1, "Name is required"),
   address: text(300).optional(), phone: text(50).optional(), receiptHeader: text(200).optional(), receiptFooter: text(200).optional(),

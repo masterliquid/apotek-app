@@ -1,4 +1,4 @@
-# Local run: `docker compose up -d --build`, then open http://localhost:3100
+# Local run: `docker compose up -d`, then open http://localhost:3100
 # Ports bind to 127.0.0.1 only. To let phones on your own Wi-Fi reach the app, change the app port
 # to "3100:3000" deliberately (see README).
 name: apotek
@@ -26,6 +26,7 @@ services:
   app:
     build: .
     restart: unless-stopped
+    command: pnpm dev
     depends_on:
       db:
         condition: service_healthy
@@ -35,6 +36,13 @@ services:
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-admin}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - /app/node_modules
+      - /app/.next
     ports:
       - "127.0.0.1:3100:3000"
 

@@ -7,6 +7,7 @@ import { getDb } from "@/db/client";
 import { can, type Permission, type Role } from "@/server/auth/permissions";
 import { type SessionContext, validateSessionToken } from "@/server/auth/sessions";
 import { NotAllowedError } from "@/server/users";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 const SESSION_COOKIE = "apotek_session";
 
@@ -63,3 +64,11 @@ export async function requirePermission(permission: Permission): Promise<Pharmac
   if (!can(session.role, permission)) throw new NotAllowedError();
   return session;
 }
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

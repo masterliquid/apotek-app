@@ -4,9 +4,10 @@ import { getDb } from "@/db/client";
 import { requirePharmacy } from "@/lib/auth";
 import { readDefaultPrinterCode } from "@/lib/printing";
 import { can } from "@/server/auth/permissions";
+import { listOsPrinters } from "@/server/printing/os-printers";
 import { listPrinters, listPrintJobs } from "@/server/printers";
 import { withPharmacy } from "@/server/tenant";
-import { retryJobAction, setDefaultPrinterAction, testPrintAction, togglePrinterAction } from "../actions";
+import { refreshOsPrintersAction, retryJobAction, setDefaultPrinterAction, testPrintAction, togglePrinterAction } from "../actions";
 import { PrinterForm } from "../settings-forms";
 
 export default function PrintersPage() {
@@ -24,12 +25,33 @@ async function Printers() {
   const pharmacyId = session.pharmacy.id;
   const data = await withPharmacy(getDb(), pharmacyId, async (tx) => ({ printers: await listPrinters(tx, pharmacyId), jobs: await listPrintJobs(tx, pharmacyId) }));
   const defaultCode = await readDefaultPrinterCode();
+  const os = await listOsPrinters();
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Printers</h1>
       <p className="text-sm text-slate-600">The printer marked “this device” is used for receipts printed from this browser. Receipts are queued and printed by the print worker; a sale is never held up by a printer problem.</p>
-      {manage && <Card title="Add printer"><PrinterForm /></Card>}
+      <Card
+        title="Printers on this computer"
+        description="Installed printers visible to this app (macOS/Linux via CUPS). This is the computer running the app, not the browser if you opened the site from another machine."
+        actions={
+          <form action={refreshOsPrintersAction}>
+            <button className="text-sm text-emerald-700 underline">Scan again</button>
+          </form>
+        }
+      >
+        {os.names.length > 0 ? (
+          <ul className="list-disc space-y-1 pl-5 text-sm text-slate-800">
+            {os.names.map((name) => (
+              <li key={name} className="font-mono">{name}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-500">{os.note ?? "No printers detected."}</p>
+        )}
+        {os.names.length > 0 && os.note && <p className="mt-2 text-sm text-slate-500">{os.note}</p>}
+      </Card>
+      {manage && <Card title="Add printer"><PrinterForm osPrinters={os.names} /></Card>}
       <Card title="Printers">
         <table className="w-full text-left text-sm">
           <thead className="text-slate-500"><tr><th className="py-2 pr-4">Code</th><th className="py-2 pr-4">Name</th><th className="py-2 pr-4">Type</th><th className="py-2 pr-4">Connection</th><th className="py-2" /></tr></thead>

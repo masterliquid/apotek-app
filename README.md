@@ -72,7 +72,7 @@ Receipts are queued in the database and printed by the **print worker** (`print-
 
 1. **Printers** menu → add a printer: code (e.g. `KASIR1`), thermal (ESC/POS) or normal, paper 58 mm / 80 mm / A4, and connection:
    - *Network*: the printer's IP address and port (usually 9100). Works from Docker.
-   - *Installed on the computer*: the printer name as the system shows it (macOS/Linux via CUPS `lp`). Docker cannot see your computer's printers, so run the worker on the host instead: `pnpm build:worker && pnpm worker` (and stop the `print-worker` container).
+   - *Installed on the computer*: the **Printers** page lists names from this computer (macOS/Linux via CUPS `lpstat` / `lp`). Docker cannot see USB or installed printers, so run the app and worker on the host instead: `pnpm dev` (or `pnpm start`) and `pnpm build:worker && pnpm worker` (and stop the `print-worker` container).
 2. **Use on this device** picks this browser's printer; finished sales print there automatically. **Test print** checks a printer without a sale.
 3. No printer or worker? Sale → **Browser print** opens a receipt page for the browser's print dialog (58 / 80 mm), which works with any printer.
 
