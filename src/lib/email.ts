@@ -19,10 +19,9 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
-  // Jika SMTP belum di-setting di .env, print link langsung ke terminal/log
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.log("=========================================");
-    console.log(`[SIMULASI EMAIL DEV] Ke: ${to}`);
+    console.log(`[SIMULASI EMAIL] Ke: ${to}`);
     console.log(`Subjek: ${subject}`);
     console.log("Isi Pesan:\n", html);
     console.log("=========================================");

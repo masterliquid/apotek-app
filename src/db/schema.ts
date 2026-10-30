@@ -63,6 +63,7 @@ export const users = pgTable("users", {
   lastLoginAt: timestamptz("last_login_at"),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
   updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+  email: text("email").unique(),
 });
 
 export const pharmacies = pgTable(

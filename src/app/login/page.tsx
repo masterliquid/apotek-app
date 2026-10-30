@@ -1,4 +1,4 @@
-import { Pill } from "lucide-react";
+import { Link, Pill } from "lucide-react";
 import { Card } from "@/components/ui";
 import { LoginForm } from "./login-form";
 
